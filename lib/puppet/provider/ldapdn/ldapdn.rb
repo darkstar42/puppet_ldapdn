@@ -173,7 +173,9 @@ Puppet::Type.type(:ldapdn).provide :ldapdn do
               and !indifferent_attributes.include?(current_key)
             work_to_do[current_key] << [ :replace ] 
           else
-            work_to_do[current_key] << [ :delete, current_value ]
+            if !indifferent_attributes.include?(current_key)
+              work_to_do[current_key] << [ :delete, current_value ]
+            end
           end
         end
       end
