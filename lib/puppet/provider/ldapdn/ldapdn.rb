@@ -63,6 +63,7 @@ Puppet::Type.type(:ldapdn).provide :ldapdn do
             modify_record << "-" if modify_type == :ldapmodify
           when :delete
             modify_record << "delete: #{attribute}"
+            modify_record << "#{attribute}: #{instruction.last}" if instruction.first != instruction.last
             modify_record << "-"
           when :replace
             modify_record << "replace: #{attribute}" if add_type == "add"
@@ -167,9 +168,13 @@ Puppet::Type.type(:ldapdn).provide :ldapdn do
           found_attributes[current_key] << current_value.clone.gsub(/^\{.*?\}/, "")
         else
           Puppet.debug("not asserted: #{current_key}: #{current_value}")
-          work_to_do[current_key] << [ :replace ] if resource[:ensure] == :present \
-                                                 and unique_attributes.include?(current_key) \
-                                                 and !indifferent_attributes.include?(current_key)
+          if resource[:ensure] == :present \
+              and unique_attributes.include?(current_key) \
+              and !indifferent_attributes.include?(current_key)
+            work_to_do[current_key] << [ :replace ] 
+          else
+            work_to_do[current_key] << [ :delete, current_value ]
+          end
         end
       end
     end
