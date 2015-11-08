@@ -25,7 +25,7 @@ Puppet::Type.type(:ldapdn).provide :ldapdn do
     end
 
     command += resource[:auth_opts] || ["-QY", "EXTERNAL"]
-    command += resource[:name]
+    command += [resource[:name]]
 
     begin
       ldapdelete_output = execute(command)
