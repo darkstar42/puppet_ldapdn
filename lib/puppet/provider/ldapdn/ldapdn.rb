@@ -31,7 +31,11 @@ Puppet::Type.type(:ldapdn).provide :ldapdn do
       ldapdelete_output = execute(command)
       Puppet.debug("ldapdelete >>\n#{ldapdelete_output}")
     rescue Puppet::ExecutionFailure => ex
-      raise ex
+      if ex.message.scan '/No such object (32)/'
+        return true
+      else
+        raise ex
+      end
     end
   end
 
