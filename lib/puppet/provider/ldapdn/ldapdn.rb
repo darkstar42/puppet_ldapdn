@@ -36,7 +36,7 @@ Puppet::Type.type(:ldapdn).provide :ldapdn do
   end
 
   def exists?()
-    if resource[:ensure] == :purge
+    if resource[:ensure] == :purged
       return ldap_entry_present
     end
 
