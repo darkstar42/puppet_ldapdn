@@ -143,7 +143,6 @@ Puppet::Type.type(:ldapdn).provide :ldapdn do
 
     begin
       ldapsearch_output = execute(command)
-      Puppet.debug("ldapdn >>\n#{to_json2(asserted_attributes)}")
       Puppet.debug("ldapsearch >>\n#{ldapsearch_output}")
     rescue Puppet::ExecutionFailure => ex
       if ex.message.scan '/No such object (32)/'
