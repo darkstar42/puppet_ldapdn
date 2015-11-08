@@ -7,6 +7,7 @@ Puppet::Type.type(:ldapdn).provide :ldapdn do
   commands :ldapmodifycmd => "ldapmodify"
   commands :ldapaddcmd => "ldapadd"
   commands :ldapsearchcmd => "ldapsearch"
+  commands :ldapdeletecmd => "ldapdelete"
 
   def create()
     ldap_apply_work
@@ -16,7 +17,28 @@ Puppet::Type.type(:ldapdn).provide :ldapdn do
     ldap_apply_work
   end
 
+  def delete()
+    if resource[:remote_ldap]
+      command = [command(:ldapdeletecmd), "-H", "ldap://#{resource[:remote_ldap]}", "-b", resource[:name], "-s", "base", "-LLL", "-d", "0"]
+    else
+      command = [command(:ldapdeletecmd), "-H", "ldapi:///", "-b", resource[:name], "-s", "base", "-LLL", "-d", "0"]
+    end
+
+    command += resource[:auth_opts] || ["-QY", "EXTERNAL"]
+
+    begin
+      ldapdelete_output = execute(command)
+      Puppet.debug("ldapdelete >>\n#{ldapdelete_output}")
+    rescue Puppet::ExecutionFailure => ex
+      raise ex
+    end
+  end
+
   def exists?()
+    if resource[:ensure] == :purge
+      return ldap_entry_present
+    end
+
     @work_to_do = ldap_work_to_do(parse_attributes)
 
     # This is a bit of a butchery of an exists? method which is designed to return yes or no,
@@ -108,6 +130,31 @@ Puppet::Type.type(:ldapdn).provide :ldapdn do
 
     end
 
+  end
+
+  def ldap_entry_present()
+    if resource[:remote_ldap]
+      command = [command(:ldapsearchcmd), "-H", "ldap://#{resource[:remote_ldap]}", "-b", resource[:dn], "-s", "base", "-LLL", "-d", "0"]
+    else
+      command = [command(:ldapsearchcmd), "-H", "ldapi:///", "-b", resource[:dn], "-s", "base", "-LLL", "-d", "0"]
+    end
+
+    command += resource[:auth_opts] || ["-QY", "EXTERNAL"]
+
+    begin
+      ldapsearch_output = execute(command)
+      Puppet.debug("ldapdn >>\n#{to_json2(asserted_attributes)}")
+      Puppet.debug("ldapsearch >>\n#{ldapsearch_output}")
+    rescue Puppet::ExecutionFailure => ex
+      if ex.message.scan '/No such object (32)/'
+        Puppet.debug("Could not find object: #{resource[:dn]}")
+        return false
+      else
+        raise ex
+      end
+    end
+
+    return true
   end
 
   def ldap_work_to_do(asserted_attributes)
