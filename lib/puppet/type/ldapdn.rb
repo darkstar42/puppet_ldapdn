@@ -10,7 +10,7 @@ Puppet::Type.newtype(:ldapdn) do
       provider.destroy
     end
 
-    newvalue(:purge) do
+    newvalue(:purged) do
       provider.delete
     end
 

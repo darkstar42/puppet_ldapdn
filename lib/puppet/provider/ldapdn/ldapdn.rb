@@ -19,12 +19,13 @@ Puppet::Type.type(:ldapdn).provide :ldapdn do
 
   def delete()
     if resource[:remote_ldap]
-      command = [command(:ldapdeletecmd), "-H", "ldap://#{resource[:remote_ldap]}", "-b", resource[:name], "-s", "base", "-LLL", "-d", "0"]
+      command = [command(:ldapdeletecmd), "-H", "ldap://#{resource[:remote_ldap]}", "-d", "0"]
     else
-      command = [command(:ldapdeletecmd), "-H", "ldapi:///", "-b", resource[:name], "-s", "base", "-LLL", "-d", "0"]
+      command = [command(:ldapdeletecmd), "-H", "ldapi:///", "-d", "0"]
     end
 
     command += resource[:auth_opts] || ["-QY", "EXTERNAL"]
+    command += resource[:name]
 
     begin
       ldapdelete_output = execute(command)
