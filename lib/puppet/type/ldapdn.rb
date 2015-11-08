@@ -10,6 +10,10 @@ Puppet::Type.newtype(:ldapdn) do
       provider.destroy
     end
 
+    newvalue(:purged) do
+      provider.delete
+    end
+
     defaultto :present
 
   end
