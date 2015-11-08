@@ -217,7 +217,7 @@ Puppet::Type.type(:ldapdn).provide :ldapdn do
         end
         if same_as_an_asserted_value
           Puppet.debug("asserted and found: #{current_key}: #{current_value}")
-          work_to_do[current_key] << [ :delete ] if resource[:ensure] == :absent
+          work_to_do[current_key] << [ :delete, current_value ] if resource[:ensure] == :absent
           found_attributes[current_key] << current_value.clone.gsub(/^\{.*?\}/, "")
         else
           Puppet.debug("not asserted: #{current_key}: #{current_value}")
