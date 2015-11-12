@@ -41,7 +41,7 @@ Puppet::Type.type(:ldapdn).provide :ldapdn do
 
   def exists?()
     if resource[:ensure] == :purged
-      return ldap_entry_present
+      return ldap_entry_present == false
     end
 
     @work_to_do = ldap_work_to_do(parse_attributes)
